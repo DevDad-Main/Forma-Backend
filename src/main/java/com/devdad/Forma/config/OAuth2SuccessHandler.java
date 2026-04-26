@@ -92,6 +92,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 					SecurityConfig securityConfig = ctx.getBean(SecurityConfig.class);
 					newUser.setPassword(securityConfig.passwordEncoder().encode(UUID.randomUUID().toString()));
 
+					System.out.println("New User Created: " + newUser);
 					return UserRepository.save(newUser);
 				});
 
@@ -121,13 +122,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 			session.invalidate();
 		}
 
-		// Return JSON instead of redirecting
-		// This lets the frontend decide where to go next
-		// Frontend should read the JWT cookie and handle navigation
-		response.setContentType("application/json");
-		response.setStatus(200);
-		response.getWriter().write("{\"success\": true, \"redirect\": \"http://localhost:8080/about\"}");
-		response.getWriter().flush();
+		response.sendRedirect("http://localhost:5173?loggedIn=true");
+
+		// // Return JSON instead of redirecting
+		// // This lets the frontend decide where to go next
+		// // Frontend should read the JWT cookie and handle navigation
+		// response.setContentType("application/json");
+		// response.setStatus(200);
+		// // response.getWriter().write("{\"success\": true, \"redirect\":
+		// // \"http://localhost:8080/about\"}");
+		// response.getWriter().write("{\"success\": true, \"redirect\":
+		// \"http://localhost:5173\"}");
+		// response.getWriter().flush();
 	}
 
 }

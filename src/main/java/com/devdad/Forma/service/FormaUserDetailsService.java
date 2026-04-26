@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.devdad.Forma.model.User;
 import com.devdad.Forma.model.UserPrinciple;
@@ -32,6 +34,7 @@ import com.devdad.Forma.repository.UserRepository;
  * - What roles/authorities does the user have?
  * - What is the user's identifier?
  */
+@Service
 public class FormaUserDetailsService implements UserDetailsService {
 
 	@Autowired

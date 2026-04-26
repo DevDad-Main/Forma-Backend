@@ -13,6 +13,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Security Configuration for the application.
@@ -69,6 +73,9 @@ public class SecurityConfig {
 		// CSRF requires stateful cookies, but we use stateless tokens
 		http.csrf(csrf -> csrf.disable());
 
+		// Enable CORS
+		http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
 		// Step 2: Define which URLs are public (no login required)
 		// These paths allow anyone to access them:
 		// - /register, /login: Registration and login pages
@@ -109,5 +116,17 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
 		return config.getAuthenticationManager();
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.addAllowedOrigin("http://localhost:5173");
+		config.addAllowedHeader("*");
+		config.addAllowedMethod("*");
+		config.setAllowCredentials(true);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+		return source;
 	}
 }

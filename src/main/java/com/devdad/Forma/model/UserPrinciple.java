@@ -28,6 +28,10 @@ public class UserPrinciple implements UserDetails {
 	public UserPrinciple(User user) {
 		this.user = user;
 	}
+	
+	public User getUser() {
+		return user;
+	}
 
 	/*
 	 * Returns the user's authorities (roles).
