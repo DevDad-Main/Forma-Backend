@@ -33,4 +33,6 @@ public class User {
 	@Column(nullable = false)
 	private String password;
 
+	// Default to USER role.
+	private String role = UserRole.USER.toString();
 }

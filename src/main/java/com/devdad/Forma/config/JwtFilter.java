@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.devdad.Forma.service.FormaUserDetailsService;
 import com.devdad.Forma.service.JwtService;
 
 import jakarta.servlet.FilterChain;
@@ -74,26 +76,26 @@ public class JwtFilter extends OncePerRequestFilter {
 				UserDetails userDetails = ctx
 						.getBean(FormaUserDetailsService.class)
 						.loadUserByUsername(userId);
-			}
 
-			// Validate Token:
-			// - Token subject (userId) matches the loaded user
-			// - Token hsn't expired
-			if (jwtService.validateToken(token, userDetails)) {
-				System.out.println("JWT Valid!");
+				// Validate Token:
+				// - Token subject (userId) matches the loaded user
+				// - Token hsn't expired
+				if (jwtService.validateToken(token, userDetails)) {
+					System.out.println("JWT Valid!");
 
-				// Create authentication token with users authorities (roles)
-				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
-						userDetails.getAuthorities());
+					// Create authentication token with users authorities (roles)
+					UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+							userDetails.getAuthorities());
 
-				// Attach request details to the auth token
-				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					// Attach request details to the auth token
+					authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-				// CRITICAL: Set authentication in SecurityContext
-				// This tells Spring "this request is authenticated as this user"
-				SecurityContextHolder.getContext().setAuthentication(authToken);
-			} else {
-				System.out.println("JWT Invalid!");
+					// CRITICAL: Set authentication in SecurityContext
+					// This tells Spring "this request is authenticated as this user"
+					SecurityContextHolder.getContext().setAuthentication(authToken);
+				} else {
+					System.out.println("JWT Invalid!");
+				}
 			}
 		}
 		filterChain.doFilter(request, response);
