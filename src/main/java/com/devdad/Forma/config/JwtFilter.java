@@ -1,0 +1,102 @@
+package com.devdad.Forma.config;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.devdad.Forma.service.JwtService;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+public class JwtFilter extends OncePerRequestFilter {
+
+	@Autowired
+	private JwtService jwtService;
+
+	@Autowired
+	private ApplicationContext ctx;
+
+	/**
+	 * This method runs for every incoming HTTP request.
+	 * 
+	 * @param request     - The HTTP request (contains headers, cookies)
+	 * @param response    - The HTTP response
+	 * @param filterChain - Passes request to next filter/endpoint
+	 */
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+		String requestURI = request.getRequestURI();
+		System.out.println("JwtFilter: " + requestURI);
+
+		String authHeader = request.getHeader("Authorization");
+		String token = null;
+
+		// Try to get JWT from Authorization header
+		// Format: "Bearer ejghskskjdak"
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			token = authHeader.substring(7); // Remove "Bearer " prefix
+		}
+
+		// If no header token, check cookies
+		if (token == null && request.getCookies() != null) {
+			for (Cookie cookie : request.getCookies()) {
+				System.out.println("Cookie: " + cookie.getName() + " = " +
+						cookie.getValue().substring(0, Math.min(20, cookie.getValue().length())));
+				if ("jwt".equals(cookie.getName())) {
+					token = cookie.getValue();
+					System.out.println("JWT cookie found!");
+					break;
+				}
+			}
+		}
+
+		// If we have a token, then we validate it.
+		if (token != null) {
+			String userId = jwtService.extractUserId(token);
+			System.out.println("Extracted UserID: " + userId);
+
+			// Only authenticate if:
+			// - We got a userid from the token
+			// - User isn't already authenticated (prevents re-authentication (issue from
+			// before))
+			if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+				// Load the user from the DB using their id
+				UserDetails userDetails = ctx
+						.getBean(FormaUserDetailsService.class)
+						.loadUserByUsername(userId);
+			}
+
+			// Validate Token:
+			// - Token subject (userId) matches the loaded user
+			// - Token hsn't expired
+			if (jwtService.validateToken(token, userDetails)) {
+				System.out.println("JWT Valid!");
+
+				// Create authentication token with users authorities (roles)
+				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+						userDetails.getAuthorities());
+
+				// Attach request details to the auth token
+				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+				// CRITICAL: Set authentication in SecurityContext
+				// This tells Spring "this request is authenticated as this user"
+				SecurityContextHolder.getContext().setAuthentication(authToken);
+			} else {
+				System.out.println("JWT Invalid!");
+			}
+		}
+		filterChain.doFilter(request, response);
+	}
+
+}
