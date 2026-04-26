@@ -1,6 +1,7 @@
 package com.devdad.Forma.config;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -12,6 +13,8 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import com.devdad.Forma.service.JwtService;
+import com.devdad.Forma.model.User;
+import com.devdad.Forma.repository.UserRepository;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -86,8 +89,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 					newUser.setProfilePicture(picture);
 
 					// Generate random password (OAuth users don't need password)
-					SecurityConfig passwordEncoder = ctx.getBean(SecurityConfig.class);
-					newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+					SecurityConfig securityConfig = ctx.getBean(SecurityConfig.class);
+					newUser.setPassword(securityConfig.passwordEncoder().encode(UUID.randomUUID().toString()));
 
 					return UserRepository.save(newUser);
 				});
