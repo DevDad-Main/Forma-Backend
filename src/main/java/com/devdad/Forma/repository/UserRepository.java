@@ -19,4 +19,13 @@ public interface UserRepository extends JpaRepositoryImplementation<User, Intege
 	 */
 	Optional<User> findByGoogleId(String googleId);
 
+	/**
+	 * With the help of JPA's DSL we can fetch the user by unique constraint of
+	 * Email
+	 * 
+	 * @param email
+	 * @return User Object || null
+	 */
+	Optional<User> findByEmail(String email);
+
 }

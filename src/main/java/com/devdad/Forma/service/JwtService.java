@@ -22,38 +22,43 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class JwtService {
 
-	private final JwtProperties jwtProperties;
-	private final Key signingKey;
+    private final JwtProperties jwtProperties;
+    private final Key signingKey;
 
-	@Autowired
-	public JwtService(JwtProperties jwtProperties) {
-		this.jwtProperties = jwtProperties;
-		this.signingKey = getKey(); // Now jwtProperties is fully initialized
-	}
+    @Autowired
+    public JwtService(JwtProperties jwtProperties) {
+        this.jwtProperties = jwtProperties;
+        this.signingKey = getKey();
+    }
 
-	public String generateToken(String userId) {
-		Map<String, Object> claims = new HashMap<>();
+    public String generateToken(String userId) {
+        Map<String, Object> claims = new HashMap<>();
 
-		System.out.println("Claims: " + claims);
+        System.out.println("Claims: " + claims);
 
-		return Jwts.builder()
-				.claims(claims)
-				.subject(userId)
-				.issuer(jwtProperties.getIssuer())
-				.issuedAt(new Date())
-				.expiration(new Date(
-						System.currentTimeMillis() + jwtProperties.getExpiration()))
-				.signWith(signingKey, SignatureAlgorithm.HS256).compact();
+        return Jwts.builder()
+                .claims(claims)
+                .subject(userId)
+                .issuer(jwtProperties.getIssuer())
+                .issuedAt(new Date())
+                .expiration(new Date(
+                        System.currentTimeMillis() + jwtProperties.getExpiration()))
+                .signWith(signingKey, SignatureAlgorithm.HS256).compact();
 
-	}
+    }
 
-	private Key getKey() {
-		byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
-		return Keys.hmacShaKeyFor(keyBytes);
-	}
+    private Key getKey() {
+        // Access fields directly instead of Lombok getters
+        String secret = jwtProperties.getSecret();
+        if (secret == null) {
+            // Default secret for development
+            secret = "ThisIsASecretKeyForDevelopmentOnly12345678901234567890";
+        }
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
 	public String extractUserId(String token) {
 		return extractClaim(token, Claims::getSubject);

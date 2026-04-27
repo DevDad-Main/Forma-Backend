@@ -1,35 +1,44 @@
 package com.devdad.Forma.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.devdad.Forma.model.User;
-import com.devdad.Forma.model.UserPrinciple;
+import com.devdad.Forma.model.dto.UserRegisterResponse;
 import com.devdad.Forma.model.dto.UserResponse;
+import com.devdad.Forma.service.AuthService;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-	@GetMapping("/auth/me")
-	public ResponseEntity<UserResponse> getAuthUser() {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		UserPrinciple principle = (UserPrinciple) auth.getPrincipal();
-		User user = principle.getUser();
+    private final AuthService authService;
 
-		UserResponse response = new UserResponse(
-				user.getId(),
-				user.getEmail(),
-				user.getFirstName(),
-				user.getLastName(),
-				user.getRole(),
-				user.getProfilePicture());
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getAuthUser() {
+        return ResponseEntity.ok(authService.getAuthenticatedUser());
+    }
 
-		return ResponseEntity.ok(response);
-	}
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> registerUser(@RequestBody UserRegisterResponse request,
+            HttpServletResponse response) {
+        User user = authService.registerUser(request, response);
+        return new ResponseEntity<>(toUserResponse(user), HttpStatus.CREATED);
+    }
+
+    private UserResponse toUserResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRole(),
+                user.getProfilePicture());
+    }
 }
