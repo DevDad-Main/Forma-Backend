@@ -22,6 +22,7 @@ import com.devdad.Forma.model.dto.UserRegisterResponse;
 import com.devdad.Forma.model.dto.UserResponse;
 import com.devdad.Forma.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -95,7 +96,7 @@ public class AuthService {
 		try {
 			System.out.println("=== LOGIN START ===");
 			System.out.println("Email: " + userLoginResponse.email());
-			
+
 			Authentication authentication = authenticationManager
 					.authenticate(
 							new UsernamePasswordAuthenticationToken(userLoginResponse.email(), userLoginResponse.password()));
@@ -130,5 +131,13 @@ public class AuthService {
 			e.printStackTrace();
 			throw new RuntimeException("Login failed: " + e.getMessage());
 		}
+	}
+
+	public void logout(HttpServletRequest request, HttpServletResponse response) {
+		request.getSession(false);
+		jakarta.servlet.http.Cookie jwtCookie = new jakarta.servlet.http.Cookie("jwt", "");
+		jwtCookie.setPath("/");
+		jwtCookie.setMaxAge(0);
+		response.addCookie(jwtCookie);
 	}
 }

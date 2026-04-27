@@ -108,17 +108,25 @@ public class JwtFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 
 		} catch (ExpiredJwtException e) {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			response.setContentType("application/json; charset=UTF-8");
-			response.getWriter().write("{\"error\":\"Token expired\"}");
-			response.getWriter().flush();
-			return; // Stop here - don't continue filter chain
+			if (SecurityContextHolder.getContext().getAuthentication() != null) {
+				filterChain.doFilter(request, response);
+			} else {
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				response.setContentType("application/json; charset=UTF-8");
+				response.getWriter().write("{\"error\":\"Token expired\"}");
+				response.getWriter().flush();
+			}
+			return;
 		} catch (Exception e) {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			response.setContentType("application/json; charset=UTF-8");
-			response.getWriter().write("{\"error\":\"Invalid token\"}");
-			response.getWriter().flush();
-			return; // Stop here
+			if (SecurityContextHolder.getContext().getAuthentication() != null) {
+				filterChain.doFilter(request, response);
+			} else {
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				response.setContentType("application/json; charset=UTF-8");
+				response.getWriter().write("{\"error\":\"Invalid token\"}");
+				response.getWriter().flush();
+			}
+			return;
 		}
 	}
 

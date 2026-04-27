@@ -1,5 +1,7 @@
 package com.devdad.Forma.config;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
@@ -21,6 +24,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
@@ -91,7 +96,8 @@ public class SecurityConfig {
 		// - /oauth2/**: Google's OAuth2 endpoints (login flow)
 		// - /error: Error page
 		http.authorizeHttpRequests(request -> request
-				.requestMatchers("/api/auth/register", "/api/auth/login", "/oauth2/**", "/error")
+				.requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/logout", "/oauth2/**", "/login/oauth2/**",
+						"/error")
 				.permitAll()
 				// All other URLs require authentication
 				.anyRequest().authenticated())
@@ -103,9 +109,15 @@ public class SecurityConfig {
 		// When a user visits /oauth2/authorization/google, they get redirected to
 		// Google
 		// After Google login, OAuth2SuccessHandler runs
+		// Using cookie-based auth request repository to prevent session-related errors
 		http.oauth2Login(oauth -> oauth
+				.authorizationEndpoint(endpoint -> endpoint
+						.authorizationRequestRepository(new CookieBasedOAuth2AuthorizationRequestRepository()))
 				.successHandler(oAuth2SuccessHandler)
-				.failureUrl("/login?error=true"));
+				.failureHandler((request, response, exception) -> {
+					exception.printStackTrace(); // Capture actual error
+					response.sendRedirect("http://localhost:5173?oauth_error=true");
+				}));
 
 		// Session management
 		// IF_REQUIRED: Only create a session if OAuth2 flow needs it
@@ -143,11 +155,15 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
 		config.addAllowedOrigin("http://localhost:5173");
-		config.addAllowedHeader("*");
-		config.addAllowedMethod("*");
+		// Also ensure:
 		config.setAllowCredentials(true);
+		config.addAllowedHeader("*");
+		config.addAllowedMethod("GET");
+		config.addAllowedMethod("POST");
+		config.addAllowedMethod("PUT");
+		config.addAllowedMethod("DELETE");
+		config.addAllowedMethod("OPTIONS");
 		// Allows Set-Cookie header through CORS
-		config.addExposedHeader("Set-Cookie");
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
 		return source;

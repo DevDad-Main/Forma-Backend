@@ -122,6 +122,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 			session.invalidate();
 		}
 
+		// Clear the oauth2_auth cookie to prevent reuse
+		jakarta.servlet.http.Cookie authCookie = new jakarta.servlet.http.Cookie("oauth2_auth", "");
+		authCookie.setPath("/");
+		authCookie.setMaxAge(0);
+		authCookie.setHttpOnly(true);
+		response.addCookie(authCookie);
+
 		// Redirect to this url as the frontend listens to this URI and then navigates
 		// the users to their profile.
 		response.sendRedirect("http://localhost:5173/login/oauth2/code/google");

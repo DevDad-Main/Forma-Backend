@@ -7,6 +7,7 @@ import com.devdad.Forma.model.dto.UserRegisterResponse;
 import com.devdad.Forma.model.dto.UserResponse;
 import com.devdad.Forma.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +44,12 @@ public class AuthController {
                 response);
         System.out.println("Login Response: " + loginResponseDto);
         return ResponseEntity.ok(loginResponseDto);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        authService.logout(request, response);
+        return ResponseEntity.ok().build();
     }
 
     private UserResponse toUserResponse(User user) {
