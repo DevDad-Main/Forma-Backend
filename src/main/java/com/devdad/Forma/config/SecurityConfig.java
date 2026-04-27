@@ -12,12 +12,20 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Security Configuration for the application.
@@ -86,7 +94,10 @@ public class SecurityConfig {
 				.requestMatchers("/api/auth/register", "/api/auth/login", "/oauth2/**", "/error")
 				.permitAll()
 				// All other URLs require authentication
-				.anyRequest().authenticated());
+				.anyRequest().authenticated())
+				// returns proper 401 JSON for API calls instead of redirecting to OAuth.
+				.exceptionHandling(ex -> ex
+						.authenticationEntryPoint(authenticationEntryPoint()));
 
 		// Configure Google OAuth2 login
 		// When a user visits /oauth2/authorization/google, they get redirected to
@@ -135,8 +146,21 @@ public class SecurityConfig {
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		config.setAllowCredentials(true);
+		// Allows Set-Cookie header through CORS
+		config.addExposedHeader("Set-Cookie");
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
 		return source;
 	}
+
+	@Bean
+	public AuthenticationEntryPoint authenticationEntryPoint() {
+		return (HttpServletRequest request, HttpServletResponse response,
+				AuthenticationException auth) -> {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json; charset=UTF-8");
+			response.getWriter().write("{\"error\":\"Authentication required\"}");
+		};
+	}
+
 }

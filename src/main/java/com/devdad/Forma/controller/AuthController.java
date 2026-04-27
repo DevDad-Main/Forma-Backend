@@ -1,12 +1,16 @@
 package com.devdad.Forma.controller;
 
 import com.devdad.Forma.model.User;
+import com.devdad.Forma.model.dto.LoginResponse;
+import com.devdad.Forma.model.dto.UserLoginResponse;
 import com.devdad.Forma.model.dto.UserRegisterResponse;
 import com.devdad.Forma.model.dto.UserResponse;
 import com.devdad.Forma.service.AuthService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+import javax.security.auth.login.LoginException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
+    @Autowired
     private final AuthService authService;
 
     @GetMapping("/me")
@@ -30,6 +35,14 @@ public class AuthController {
             HttpServletResponse response) {
         User user = authService.registerUser(request, response);
         return new ResponseEntity<>(toUserResponse(user), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserLoginResponse userLoginResponse, HttpServletResponse response) {
+        LoginResponse loginResponseDto = authService.validateAndAuthenticateUserForLogin(userLoginResponse,
+                response);
+        System.out.println("Login Response: " + loginResponseDto);
+        return ResponseEntity.ok(loginResponseDto);
     }
 
     private UserResponse toUserResponse(User user) {

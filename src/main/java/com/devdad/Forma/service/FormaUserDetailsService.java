@@ -43,19 +43,25 @@ public class FormaUserDetailsService implements UserDetailsService {
 	/**
 	 * Loads a user by their database ID.
 	 * 
-	 * @param userId - The user's database ID as a String (e.g., "1", "2")
+	 * @param identifier - The user's database ID as a String (e.g., "1", "2")
 	 * @return UserDetails - A UserPrinciple wrapping the User entity
 	 * @throws UsernameNotFoundException - If user with given ID doesn't exist
 	 */
 	@Override
-	public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+	public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+
+		Optional<User> optionalUser = null;
 
 		// Convert String ID to Integer and look up in the database.
-		Optional<User> optionalUser = userRepository.findById(Integer.valueOf(userId));
+		if (identifier.contains("@")) {
+			optionalUser = userRepository.findByEmail(identifier);
+		} else {
+			optionalUser = userRepository.findById(Integer.valueOf(identifier));
+		}
 
-		// If user dosen't exis, throws exception
+		// If user dosen't exist, throws exception
 		if (optionalUser.isEmpty()) {
-			throw new UsernameNotFoundException("User Not Found: " + userId);
+			throw new UsernameNotFoundException("User Not Found: " + identifier);
 		}
 
 		// Get the user from Optional wrap in UserPrinciple

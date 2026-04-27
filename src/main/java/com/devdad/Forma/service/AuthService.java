@@ -2,8 +2,12 @@ package com.devdad.Forma.service;
 
 import java.util.Map;
 
+import javax.security.auth.login.LoginException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -12,6 +16,8 @@ import com.devdad.Forma.config.SecurityConfig;
 import com.devdad.Forma.exception.EmailAlreadyExistsException;
 import com.devdad.Forma.model.User;
 import com.devdad.Forma.model.UserPrinciple;
+import com.devdad.Forma.model.dto.LoginResponse;
+import com.devdad.Forma.model.dto.UserLoginResponse;
 import com.devdad.Forma.model.dto.UserRegisterResponse;
 import com.devdad.Forma.model.dto.UserResponse;
 import com.devdad.Forma.repository.UserRepository;
@@ -30,6 +36,9 @@ public class AuthService {
 
 	@Autowired
 	private JwtService jwtService;
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
 	public UserResponse getAuthenticatedUser() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -79,5 +88,47 @@ public class AuthService {
 		response.setHeader("Set-Cookie", cookie.toString());
 
 		return user;
+	}
+
+	public LoginResponse validateAndAuthenticateUserForLogin(UserLoginResponse userLoginResponse,
+			HttpServletResponse response) {
+		try {
+			System.out.println("=== LOGIN START ===");
+			System.out.println("Email: " + userLoginResponse.email());
+			
+			Authentication authentication = authenticationManager
+					.authenticate(
+							new UsernamePasswordAuthenticationToken(userLoginResponse.email(), userLoginResponse.password()));
+
+			System.out.println("Authentication result: " + authentication.isAuthenticated());
+
+			if (!authentication.isAuthenticated()) {
+				System.out.println("NOT AUTHENTICATED!");
+				return null;
+			}
+
+			User user = userRepository.findByEmail(userLoginResponse.email()).orElseThrow();
+			String token = jwtService.generateToken(String.valueOf(user.getId()));
+
+			// Cookie is sent automatically with every request to our domain
+			ResponseCookie cookie = ResponseCookie.from("jwt", token)
+					.httpOnly(true) // JS can't read this cookie
+					.secure(false) // set to TRUE in production
+					.path("/") // Cookie is sent to all paths.
+					.maxAge(24 * 60 * 60) // Expires in 24 hours.
+					.sameSite("Lax") // Sent with same site requests
+					.build();
+
+			response.setHeader("Set-Cookie", cookie.toString());
+
+			System.out.println("USER: " + user + " TOKEN: " + token + " COOKIE: " + cookie);
+			System.out.println("=== LOGIN COMPLETE ===");
+
+			return new LoginResponse(user, token);
+		} catch (Exception e) {
+			System.out.println("LOGIN ERROR: " + e.getMessage());
+			e.printStackTrace();
+			throw new RuntimeException("Login failed: " + e.getMessage());
+		}
 	}
 }
