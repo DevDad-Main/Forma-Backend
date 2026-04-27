@@ -13,7 +13,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.devdad.Forma.service.FormaUserDetailsService;
 import com.devdad.Forma.service.JwtService;
+import com.nimbusds.jwt.proc.ExpiredJWTException;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -39,68 +41,84 @@ public class JwtFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-		String requestURI = request.getRequestURI();
-		System.out.println("JwtFilter: " + requestURI);
+		try {
 
-		String authHeader = request.getHeader("Authorization");
-		String token = null;
+			String requestURI = request.getRequestURI();
+			System.out.println("JwtFilter: " + requestURI);
 
-		// Try to get JWT from Authorization header
-		// Format: "Bearer ejghskskjdak"
-		if (authHeader != null && authHeader.startsWith("Bearer ")) {
-			token = authHeader.substring(7); // Remove "Bearer " prefix
-		}
+			String authHeader = request.getHeader("Authorization");
+			String token = null;
 
-		// If no header token, check cookies
-		if (token == null && request.getCookies() != null) {
-			for (Cookie cookie : request.getCookies()) {
-				System.out.println("Cookie: " + cookie.getName() + " = " +
-						cookie.getValue().substring(0, Math.min(20, cookie.getValue().length())));
-				if ("jwt".equals(cookie.getName())) {
-					token = cookie.getValue();
-					System.out.println("JWT cookie found!");
-					break;
+			// Try to get JWT from Authorization header
+			// Format: "Bearer ejghskskjdak"
+			if (authHeader != null && authHeader.startsWith("Bearer ")) {
+				token = authHeader.substring(7); // Remove "Bearer " prefix
+			}
+
+			// If no header token, check cookies
+			if (token == null && request.getCookies() != null) {
+				for (Cookie cookie : request.getCookies()) {
+					System.out.println("Cookie: " + cookie.getName() + " = " +
+							cookie.getValue().substring(0, Math.min(20, cookie.getValue().length())));
+					if ("jwt".equals(cookie.getName())) {
+						token = cookie.getValue();
+						System.out.println("JWT cookie found!");
+						break;
+					}
 				}
 			}
-		}
 
-		// If we have a token, then we validate it.
-		if (token != null) {
-			String userId = jwtService.extractUserId(token);
-			System.out.println("Extracted UserID: " + userId);
+			// If we have a token, then we validate it.
+			if (token != null) {
+				String userId = jwtService.extractUserId(token);
+				System.out.println("Extracted UserID: " + userId);
 
-			// Only authenticate if:
-			// - We got a userid from the token
-			// - User isn't already authenticated (prevents re-authentication (issue from
-			// before))
-			if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-				// Load the user from the DB using their id
-				UserDetails userDetails = ctx
-						.getBean(FormaUserDetailsService.class)
-						.loadUserByUsername(userId);
+				// Only authenticate if:
+				// - We got a userid from the token
+				// - User isn't already authenticated (prevents re-authentication (issue from
+				// before))
+				if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+					// Load the user from the DB using their id
+					UserDetails userDetails = ctx
+							.getBean(FormaUserDetailsService.class)
+							.loadUserByUsername(userId);
 
-				// Validate Token:
-				// - Token subject (userId) matches the loaded user
-				// - Token hsn't expired
-				if (jwtService.validateToken(token, userDetails)) {
-					System.out.println("JWT Valid!");
+					// Validate Token:
+					// - Token subject (userId) matches the loaded user
+					// - Token hsn't expired
+					if (jwtService.validateToken(token, userDetails)) {
+						System.out.println("JWT Valid!");
 
-					// Create authentication token with users authorities (roles)
-					UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
-							userDetails.getAuthorities());
+						// Create authentication token with users authorities (roles)
+						UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+								userDetails.getAuthorities());
 
-					// Attach request details to the auth token
-					authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+						// Attach request details to the auth token
+						authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-					// CRITICAL: Set authentication in SecurityContext
-					// This tells Spring "this request is authenticated as this user"
-					SecurityContextHolder.getContext().setAuthentication(authToken);
-				} else {
-					System.out.println("JWT Invalid!");
+						// CRITICAL: Set authentication in SecurityContext
+						// This tells Spring "this request is authenticated as this user"
+						SecurityContextHolder.getContext().setAuthentication(authToken);
+					} else {
+						System.out.println("JWT Invalid!");
+					}
 				}
 			}
+			filterChain.doFilter(request, response);
+
+		} catch (ExpiredJwtException e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json; charset=UTF-8");
+			response.getWriter().write("{\"error\":\"Token expired\"}");
+			response.getWriter().flush();
+			return; // Stop here - don't continue filter chain
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json; charset=UTF-8");
+			response.getWriter().write("{\"error\":\"Invalid token\"}");
+			response.getWriter().flush();
+			return; // Stop here
 		}
-		filterChain.doFilter(request, response);
 	}
 
 }

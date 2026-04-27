@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,16 +19,19 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
 	private final JwtProperties jwtProperties;
 	private final Key signingKey;
 
+	@Autowired
 	public JwtService(JwtProperties jwtProperties) {
 		this.jwtProperties = jwtProperties;
-		this.signingKey = getKey();
+		this.signingKey = getKey(); // Now jwtProperties is fully initialized
 	}
 
 	public String generateToken(String userId) {
@@ -69,7 +73,7 @@ public class JwtService {
 	public boolean validateToken(String token, UserDetails userDetails) {
 		final String userId = extractUserId(token); // JWT Subject = user ID
 		final String userIdFromDb = userDetails.getUsername(); // getUsername() returns ID
-		return (userId.equals(userDetails.getUsername()) && !isTokenExpired(token));
+		return (userId.equals(userIdFromDb) && !isTokenExpired(token));
 	}
 
 	private boolean isTokenExpired(String token) {
