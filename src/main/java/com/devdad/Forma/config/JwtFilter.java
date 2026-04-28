@@ -1,6 +1,8 @@
 package com.devdad.Forma.config;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -16,6 +18,7 @@ import com.devdad.Forma.service.JwtService;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.lang.Arrays;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -31,6 +34,14 @@ public class JwtFilter extends OncePerRequestFilter {
 	@Autowired
 	private ApplicationContext ctx;
 
+	private static final List<String> PUBLIC_PATHS_LIST = List.of(
+			"/api/auth/register",
+			"/api/auth/login",
+			"/api/auth/logout",
+			"/oauth2",
+			"/login/oauth2",
+			"/error");
+
 	/**
 	 * This method runs for every incoming HTTP request.
 	 * 
@@ -45,6 +56,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
 			String requestURI = request.getRequestURI();
 			System.out.println("JwtFilter: " + requestURI);
+
+			// Skip JWT processing for public paths entirely
+			if (isPublicPath(requestURI)) {
+				filterChain.doFilter(request, response);
+				return;
+			}
 
 			String authHeader = request.getHeader("Authorization");
 			String token = null;
@@ -108,26 +125,52 @@ public class JwtFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 
 		} catch (ExpiredJwtException e) {
-			if (SecurityContextHolder.getContext().getAuthentication() != null) {
-				filterChain.doFilter(request, response);
-			} else {
-				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				response.setContentType("application/json; charset=UTF-8");
-				response.getWriter().write("{\"error\":\"Token expired\"}");
-				response.getWriter().flush();
-			}
+			// First we clear the expired cookie
+			clearJwtCookie(response);
+			// clear session based auth
+			SecurityContextHolder.clearContext();
+
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json; charset=UTF-8");
+			response.getWriter().write("{\"error\":\"Token expired\"}");
+			response.getWriter().flush();
 			return;
 		} catch (Exception e) {
-			if (SecurityContextHolder.getContext().getAuthentication() != null) {
-				filterChain.doFilter(request, response);
-			} else {
-				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				response.setContentType("application/json; charset=UTF-8");
-				response.getWriter().write("{\"error\":\"Invalid token\"}");
-				response.getWriter().flush();
-			}
+			// First we clear the expired cookie
+			clearJwtCookie(response);
+			// clear session based auth
+			SecurityContextHolder.clearContext();
+
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json; charset=UTF-8");
+			response.getWriter().write("{\"error\":\"Invalid token\"}");
+			response.getWriter().flush();
 			return;
 		}
+	}
+
+	/**
+	 * Takes an incoming Request URI and checks it against the allowed public paths.
+	 * 
+	 * @param requestURI
+	 * @return true or false if the request is in the valid paths list.
+	 */
+	private boolean isPublicPath(String requestURI) {
+		return PUBLIC_PATHS_LIST.stream().anyMatch(requestURI::startsWith);
+	}
+
+	/**
+	 * Wrapper method to clear the "jwt" cookie.
+	 * 
+	 * @param response
+	 */
+	private void clearJwtCookie(HttpServletResponse response) {
+		Cookie cookie = new Cookie("jwt", "");
+
+		cookie.setHttpOnly(true);
+		cookie.setMaxAge(0);
+		cookie.setPath("/");
+		response.addCookie(cookie);
 	}
 
 }

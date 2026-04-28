@@ -60,32 +60,32 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-	public String extractUserId(String token) {
-		return extractClaim(token, Claims::getSubject);
-	}
+    public String extractUserId(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
 
-	private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
-		final Claims claims = extractAllClaims(token);
-		return claimResolver.apply(claims);
-	}
+    private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimResolver.apply(claims);
+    }
 
-	private Claims extractAllClaims(String token) {
-		return Jwts.parser()
-				.verifyWith((SecretKey) signingKey)
-				.build().parseSignedClaims(token).getPayload();
-	}
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith((SecretKey) signingKey)
+                .build().parseSignedClaims(token).getPayload();
+    }
 
-	public boolean validateToken(String token, UserDetails userDetails) {
-		final String userId = extractUserId(token); // JWT Subject = user ID
-		final String userIdFromDb = userDetails.getUsername(); // getUsername() returns ID
-		return (userId.equals(userIdFromDb) && !isTokenExpired(token));
-	}
+    public boolean validateToken(String token, UserDetails userDetails) {
+        final String userId = extractUserId(token); // JWT Subject = user ID
+        final String userIdFromDb = userDetails.getUsername(); // getUsername() returns ID
+        return (userId.equals(userIdFromDb) && !isTokenExpired(token));
+    }
 
-	private boolean isTokenExpired(String token) {
-		return extractExpiration(token).before(new Date());
-	}
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
 
-	private Date extractExpiration(String token) {
-		return extractClaim(token, Claims::getExpiration);
-	}
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
 }

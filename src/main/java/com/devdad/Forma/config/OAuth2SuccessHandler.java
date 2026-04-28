@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.web.server.Cookie;
+import jakarta.servlet.http.Cookie;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -120,6 +122,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			session.invalidate();
+
+			// Also clear the JSESSIONID cookie that lingers around
+			Cookie sessionCookie = new Cookie("JSESSIONID", "");
+			sessionCookie.setPath("/");
+			sessionCookie.setMaxAge(0);
+			sessionCookie.setHttpOnly(true);
+			response.addCookie(sessionCookie);
 		}
 
 		// Clear the oauth2_auth cookie to prevent reuse
