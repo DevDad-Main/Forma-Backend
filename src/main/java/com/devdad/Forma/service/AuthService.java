@@ -47,6 +47,7 @@ public class AuthService {
 		User user = principle.getUser();
 
 		System.out.println("User Principle: " + user);
+		System.out.println("Auth Authorities: " + auth.getAuthorities());
 
 		UserResponse response = new UserResponse(
 				user.getId(),

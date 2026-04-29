@@ -18,6 +18,7 @@ import com.devdad.Forma.service.JwtService;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.lang.Arrays;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -135,7 +136,7 @@ public class JwtFilter extends OncePerRequestFilter {
 			response.getWriter().write("{\"error\":\"Token expired\"}");
 			response.getWriter().flush();
 			return;
-		} catch (Exception e) {
+		} catch (JwtException e) {
 			// First we clear the expired cookie
 			clearJwtCookie(response);
 			// clear session based auth
