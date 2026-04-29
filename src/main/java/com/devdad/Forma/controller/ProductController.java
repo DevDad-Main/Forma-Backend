@@ -44,6 +44,11 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/products/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable String id) {
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
+
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/admin/products/seed")
     public ResponseEntity<?> seedDummyProducts(@RequestBody List<Product> products) {

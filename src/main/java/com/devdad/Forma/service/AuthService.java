@@ -20,6 +20,7 @@ import com.devdad.Forma.model.dto.LoginResponse;
 import com.devdad.Forma.model.dto.UserLoginResponse;
 import com.devdad.Forma.model.dto.UserRegisterResponse;
 import com.devdad.Forma.model.dto.UserResponse;
+import com.devdad.Forma.model.dto.UserUpdateResponse;
 import com.devdad.Forma.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -132,6 +133,19 @@ public class AuthService {
 			e.printStackTrace();
 			throw new RuntimeException("Login failed: " + e.getMessage());
 		}
+	}
+
+	public UserUpdateResponse updateUserProfile(UserUpdateResponse userDetails) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		UserPrinciple principle = (UserPrinciple) auth.getPrincipal();
+		User user = principle.getUser();
+
+		if (user != null) {
+			user.setFirstName(userDetails.firstName());
+			user.setLastName(userDetails.lastName());
+			userRepository.save(user);
+		}
+		return new UserUpdateResponse(user.getFirstName(), user.getLastName(), user.getEmail());
 	}
 
 	public void logout(HttpServletRequest request, HttpServletResponse response) {

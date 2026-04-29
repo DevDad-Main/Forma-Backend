@@ -5,6 +5,7 @@ import com.devdad.Forma.model.dto.LoginResponse;
 import com.devdad.Forma.model.dto.UserLoginResponse;
 import com.devdad.Forma.model.dto.UserRegisterResponse;
 import com.devdad.Forma.model.dto.UserResponse;
+import com.devdad.Forma.model.dto.UserUpdateResponse;
 import com.devdad.Forma.service.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +49,11 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         authService.logout(request, response);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@RequestBody UserUpdateResponse userDetails) {
+        return ResponseEntity.ok(authService.updateUserProfile(userDetails));
     }
 
     private UserResponse toUserResponse(User user) {
