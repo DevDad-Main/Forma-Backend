@@ -2,6 +2,7 @@ package com.devdad.Forma.service;
 
 import java.util.List;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -40,5 +41,16 @@ public class ProductService {
             product.setId(0);
         }
         return productRepository.saveAll(products);
+    }
+
+    public Product updateProduct(int id, Product product) {
+        Product existingProduct = productRepository
+                .findById(id)
+                .orElseGet(() -> createProduct(product));
+
+        // copies all fields from 'product' to 'existingProduct'
+        // We can specify fields at the end to ignore.
+        BeanUtils.copyProperties(product, existingProduct, "id");
+        return productRepository.save(existingProduct);
     }
 }
