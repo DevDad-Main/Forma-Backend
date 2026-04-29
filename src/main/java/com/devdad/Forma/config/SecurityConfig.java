@@ -96,7 +96,13 @@ public class SecurityConfig {
 		// - /oauth2/**: Google's OAuth2 endpoints (login flow)
 		// - /error: Error page
 		http.authorizeHttpRequests(request -> request
-				.requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/logout", "/oauth2/**", "/login/oauth2/**",
+				.requestMatchers(
+						"/api/auth/register",
+						"/api/auth/login",
+						"/api/auth/logout",
+						"/api/products/**",
+						"/oauth2/**",
+						"/login/oauth2/**",
 						"/error")
 				.permitAll()
 				// All other URLs require authentication
