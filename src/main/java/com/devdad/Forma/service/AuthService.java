@@ -1,9 +1,5 @@
 package com.devdad.Forma.service;
 
-import java.util.Map;
-
-import javax.security.auth.login.LoginException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,16 +12,15 @@ import com.devdad.Forma.config.SecurityConfig;
 import com.devdad.Forma.exception.EmailAlreadyExistsException;
 import com.devdad.Forma.model.User;
 import com.devdad.Forma.model.UserPrinciple;
-import com.devdad.Forma.model.dto.LoginResponse;
-import com.devdad.Forma.model.dto.UserLoginResponse;
-import com.devdad.Forma.model.dto.UserRegisterResponse;
-import com.devdad.Forma.model.dto.UserResponse;
-import com.devdad.Forma.model.dto.UserUpdateResponse;
+import com.devdad.Forma.model.dto.user.LoginResponse;
+import com.devdad.Forma.model.dto.user.UserLoginResponse;
+import com.devdad.Forma.model.dto.user.UserRegisterResponse;
+import com.devdad.Forma.model.dto.user.UserResponse;
+import com.devdad.Forma.model.dto.user.UserUpdateResponse;
 import com.devdad.Forma.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class AuthService {

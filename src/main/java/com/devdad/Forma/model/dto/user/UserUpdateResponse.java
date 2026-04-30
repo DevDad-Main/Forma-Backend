@@ -1,4 +1,4 @@
-package com.devdad.Forma.model.dto;
+package com.devdad.Forma.model.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

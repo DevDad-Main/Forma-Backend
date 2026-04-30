@@ -1,11 +1,11 @@
 package com.devdad.Forma.controller;
 
 import com.devdad.Forma.model.User;
-import com.devdad.Forma.model.dto.LoginResponse;
-import com.devdad.Forma.model.dto.UserLoginResponse;
-import com.devdad.Forma.model.dto.UserRegisterResponse;
-import com.devdad.Forma.model.dto.UserResponse;
-import com.devdad.Forma.model.dto.UserUpdateResponse;
+import com.devdad.Forma.model.dto.user.LoginResponse;
+import com.devdad.Forma.model.dto.user.UserLoginResponse;
+import com.devdad.Forma.model.dto.user.UserRegisterResponse;
+import com.devdad.Forma.model.dto.user.UserResponse;
+import com.devdad.Forma.model.dto.user.UserUpdateResponse;
 import com.devdad.Forma.service.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;

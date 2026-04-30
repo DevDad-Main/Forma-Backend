@@ -101,6 +101,7 @@ public class SecurityConfig {
 						"/api/auth/login",
 						"/api/auth/logout",
 						"/api/products/**",
+						"/api/webhooks/**",
 						"/oauth2/**",
 						"/login/oauth2/**",
 						"/error")

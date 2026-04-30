@@ -1,4 +1,4 @@
-package com.devdad.Forma.model.dto;
+package com.devdad.Forma.model.dto.user;
 
 public record UserResponse(
 		int id,
