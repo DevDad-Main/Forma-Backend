@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.devdad.Forma.model.Address;
+import com.devdad.Forma.model.dto.address.AddressCreateRequestDTO;
+import com.devdad.Forma.model.dto.address.AddressResponseDTO;
 import com.devdad.Forma.service.AddressService;
 
 @RestController
@@ -29,8 +31,8 @@ public class AddressController {
     }
 
     @PostMapping
-    public ResponseEntity<Address> createUserAddress(@RequestBody Address address) {
-        return ResponseEntity.ok(addressService.createAddress(address));
+    public ResponseEntity<AddressResponseDTO> createUserAddress(@RequestBody AddressCreateRequestDTO addressDTO) {
+        return ResponseEntity.ok(addressService.createAddress(addressDTO));
     }
 
     @PutMapping

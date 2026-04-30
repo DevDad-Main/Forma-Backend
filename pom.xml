@@ -108,6 +108,13 @@
 			<version>4.1.0-M3</version>
 			<scope>compile</scope>
 		</dependency>
+
+		<!-- Stripe server side SDK-->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>32.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

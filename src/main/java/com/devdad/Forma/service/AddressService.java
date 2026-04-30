@@ -3,13 +3,17 @@ package com.devdad.Forma.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.devdad.Forma.model.Address;
 import com.devdad.Forma.model.User;
 import com.devdad.Forma.model.UserPrinciple;
+import com.devdad.Forma.model.dto.address.AddressCreateRequestDTO;
+import com.devdad.Forma.model.dto.address.AddressResponseDTO;
 import com.devdad.Forma.repository.AddressRepository;
 
 @Service
@@ -25,17 +29,24 @@ public class AddressService {
         return addressRepository.findAllByUserId(String.valueOf(currentUser.getId()));
     }
 
-    public Address createAddress(Address address) {
+    public AddressResponseDTO createAddress(AddressCreateRequestDTO dto) {
         User currentUser = getCurrentUser();
         List<Address> existingAddresses = addressRepository.findAllByUserId(String.valueOf(currentUser.getId()));
 
         if (existingAddresses.size() >= MAX_ADDRESSES) {
-            throw new IllegalStateException("Maximum of " + MAX_ADDRESSES + " addresses allowed");
+            throw new ResponseStatusException(HttpStatus.valueOf(422),
+                    "Maximum of " + MAX_ADDRESSES + " addresses allowed");
         }
 
+        Address address = new Address();
+        address.setStreet(dto.street());
+        address.setCity(dto.city());
+        address.setState(dto.state());
+        address.setCountry(dto.country());
+        address.setZipCode(dto.zipCode());
         address.setUser(currentUser);
 
-        if (address.isDefault() || existingAddresses.isEmpty()) {
+        if (dto.isDefault() || existingAddresses.isEmpty()) {
             for (Address addr : existingAddresses) {
                 addr.setDefault(false);
             }
@@ -43,7 +54,16 @@ public class AddressService {
             address.setDefault(true);
         }
 
-        return addressRepository.save(address);
+        addressRepository.save(address);
+
+        return new AddressResponseDTO(address.getId(),
+                address.getStreet(),
+                address.getCity(),
+                address.getState(),
+                address.getCountry(),
+                address.getZipCode(),
+                address.isDefault(),
+                address.getUser().getId());
     }
 
     public Address updateAddress(Address address) {
