@@ -1,6 +1,8 @@
 package com.devdad.Forma.service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -8,9 +10,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.devdad.Forma.config.StripeProperties;
+import com.devdad.Forma.model.Address;
+import com.devdad.Forma.model.Order;
+import com.devdad.Forma.model.OrderItem;
+import com.devdad.Forma.model.OrderStatus;
+import com.devdad.Forma.model.ShippingAddress;
 import com.devdad.Forma.model.User;
 import com.devdad.Forma.model.UserPrinciple;
 import com.devdad.Forma.model.dto.payment.CreatePaymentIntentRequest;
+import com.devdad.Forma.model.dto.payment.CreatePaymentIntentRequest.ProductItem;
+import com.devdad.Forma.repository.OrderRepository;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -26,6 +35,9 @@ public class PaymentService {
 
     @Autowired
     private StripeProperties stripeProperties;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -74,8 +86,49 @@ public class PaymentService {
                         .getObject().orElse(null);
                 if (intent != null) {
                     System.out.println("Payment Intent Succeeded: " + intent.getId() + " amount=" + intent.getAmount());
-
                     // TODO: Update db with our products and order(mark as paid)
+
+                    // Extracting MetaData we set in the Payment Intentj jw
+                    String userId = intent.getMetadata().get("userId");
+                    String productsJson = intent.getMetadata().get("products");
+                    String addressJson = intent.getMetadata().get("shippingAddress");
+
+                    // System.out.println("Products From Intent: " + productsJson);
+                    // System.out.println("Shipping Address From Intent: " + addressJson);
+                    Order order = new Order();
+                    order.setUserId(Integer.parseInt(userId));
+                    order.setPaymentIntentId(intent.getId());
+                    order.setChargeId(intent.getLatestCharge());
+                    order.setAmount(intent.getAmount());
+                    order.setCurrency(intent.getCurrency());
+                    order.setStatus(OrderStatus.PAID);
+
+                    // Parse and set the Shipping Address from metadata
+                    Address address = objectMapper.readValue(addressJson, Address.class);
+                    ShippingAddress shippingAddress = new ShippingAddress();
+                    shippingAddress.setStreet(address.getStreet());
+                    shippingAddress.setCity(address.getCity());
+                    shippingAddress.setState(address.getState());
+                    shippingAddress.setCountry(address.getCountry());
+                    shippingAddress.setZipCode(address.getZipCode());
+
+                    order.setShippingAddress(shippingAddress);
+
+                    // Parse and set OrderItems.
+                    List<ProductItem> products = objectMapper.readValue(productsJson,
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, ProductItem.class));
+                    List<OrderItem> items = products.stream().map(p -> {
+                        OrderItem item = new OrderItem();
+                        item.setProductId(p.getId());
+                        item.setProductName(p.getName());
+                        item.setQuantity(p.getQuantity());
+                        item.setPriceAtPurchase(p.getPrice());
+                        item.setOrder(order);
+                        return item;
+                    }).collect(Collectors.toList());
+
+                    order.setItems(items);
+                    orderRepository.save(order);
                 }
                 break;
 
