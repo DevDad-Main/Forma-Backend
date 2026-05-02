@@ -3,11 +3,12 @@ package com.devdad.Forma.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.jspecify.annotations.Nullable;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.devdad.Forma.model.Product;
 import com.devdad.Forma.model.User;
@@ -29,28 +30,35 @@ public class WishlistService {
     @Autowired
     private UserRepository userRepository;
 
+    @Transactional
     public Wishlist addToWishlist(String id) {
-        User user = getCurrentUser();
-        Wishlist wishlist = user.getWishlist();
 
-        if (wishlist == null) {
-            wishlist = new Wishlist();
+        User user = getCurrentUser();
+        Optional<Wishlist> wishlistOpt = wishlistRepository.findByUserId(user.getId());
+
+        if (wishlistOpt.isPresent()) {
+            Wishlist wishlist = wishlistOpt.get();
+            Hibernate.initialize(wishlist.getProducts());
+
             wishlist.setUser(user);
             user.setWishlist(wishlist);
             // Ensure we save the user so that we don't have a null field
             userRepository.save(user);
+
+            boolean exists = wishlist.getProducts().size() > 0 ? wishlist.getProducts().stream()
+                    .anyMatch(p -> p.getId() == Integer.valueOf(id)) : false;
+
+            if (!exists) {
+                Product productToAddToWishlist = productRepository.findById(Integer.valueOf(id)).orElseThrow();
+                wishlist.getProducts().add(productToAddToWishlist);
+                wishlist = wishlistRepository.save(wishlist);
+            }
+
+            return wishlist;
+        } else {
+            return null;
         }
 
-        boolean exists = wishlist.getProducts().size() > 0 ? wishlist.getProducts().stream()
-                .anyMatch(p -> p.getId() == Integer.valueOf(id)) : false;
-
-        if (!exists) {
-            Product productToAddToWishlist = productRepository.findById(Integer.valueOf(id)).orElseThrow();
-            wishlist.getProducts().add(productToAddToWishlist);
-            wishlist = wishlistRepository.save(wishlist);
-        }
-
-        return wishlist;
     }
 
     public List<Product> getUserWishlist() {
