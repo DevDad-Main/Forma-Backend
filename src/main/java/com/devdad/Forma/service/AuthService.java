@@ -144,10 +144,20 @@ public class AuthService {
 	}
 
 	public void logout(HttpServletRequest request, HttpServletResponse response) {
-		request.getSession(false);
-		jakarta.servlet.http.Cookie jwtCookie = new jakarta.servlet.http.Cookie("jwt", "");
-		jwtCookie.setPath("/");
-		jwtCookie.setMaxAge(0);
-		response.addCookie(jwtCookie);
+		// request.getSession(false);
+		// jakarta.servlet.http.Cookie jwtCookie = new
+		// jakarta.servlet.http.Cookie("jwt", "");
+		// jwtCookie.setPath("/");
+		// jwtCookie.setMaxAge(0);
+		// response.addCookie(jwtCookie);
+		ResponseCookie cookie = ResponseCookie.from("jwt", "")
+				.httpOnly(true)
+				.secure(true)
+				.path("/")
+				.maxAge(0)
+				.sameSite("None")
+				.build();
+
+		response.setHeader("Set-Cookie", cookie.toString());
 	}
 }

@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -176,12 +177,15 @@ public class JwtFilter extends OncePerRequestFilter {
 	 * @param response
 	 */
 	private void clearJwtCookie(HttpServletResponse response) {
-		Cookie cookie = new Cookie("jwt", "");
+		ResponseCookie cookie = ResponseCookie.from("jwt", "")
+				.httpOnly(true)
+				.secure(true)
+				.path("/")
+				.maxAge(0)
+				.sameSite("None")
+				.build();
 
-		cookie.setHttpOnly(true);
-		cookie.setMaxAge(0);
-		cookie.setPath("/");
-		response.addCookie(cookie);
+		response.setHeader("Set-Cookie", cookie.toString());
 	}
 
 }
