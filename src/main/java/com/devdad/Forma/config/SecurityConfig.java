@@ -123,7 +123,8 @@ public class SecurityConfig {
 				.successHandler(oAuth2SuccessHandler)
 				.failureHandler((request, response, exception) -> {
 					exception.printStackTrace(); // Capture actual error
-					response.sendRedirect("http://localhost:5173?oauth_error=true");
+					// response.sendRedirect("http://localhost:5173?oauth_error=true");
+					response.sendRedirect("https://devdad-forma.vercel.app?oauth_error=true");
 				}));
 
 		// Session management
@@ -161,7 +162,8 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.addAllowedOrigin("http://localhost:5173");
+		// config.addAllowedOrigin("http://localhost:5173");
+		config.addAllowedOrigin("https://devdad-forma.vercel.app");
 		// Also ensure:
 		config.setAllowCredentials(true);
 		config.addAllowedHeader("*");

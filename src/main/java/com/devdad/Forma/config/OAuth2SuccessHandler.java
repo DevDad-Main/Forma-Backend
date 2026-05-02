@@ -140,7 +140,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 		// Redirect to this url as the frontend listens to this URI and then navigates
 		// the users to their profile.
-		response.sendRedirect("http://localhost:5173/login/oauth2/code/google");
+		// response.sendRedirect("http://localhost:5173/login/oauth2/code/google");
+		response.sendRedirect("https://devdad-forma.vercel.app/login/oauth2/code/google");
 
 		// // Return JSON instead of redirecting
 		// // This lets the frontend decide where to go next
