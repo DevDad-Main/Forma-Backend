@@ -105,10 +105,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		// Cookie is sent automatically with every request to our domain
 		ResponseCookie cookie = ResponseCookie.from("jwt", token)
 				.httpOnly(true) // JS can't read this cookie
-				.secure(false) // set to TRUE in production
+				.secure(true) // set to TRUE in production
 				.path("/") // Cookie is sent to all paths.
 				.maxAge(24 * 60 * 60) // Expires in 24 hours.
-				.sameSite("Lax") // Sent with same site requests
+				.sameSite("None") // Sent with same site requests
 				.build();
 
 		response.setHeader("Set-Cookie", cookie.toString());

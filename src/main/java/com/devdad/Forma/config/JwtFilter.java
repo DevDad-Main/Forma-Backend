@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.devdad.Forma.service.FormaUserDetailsService;
@@ -35,14 +36,17 @@ public class JwtFilter extends OncePerRequestFilter {
 	@Autowired
 	private ApplicationContext ctx;
 
+	private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
 	private static final List<String> PUBLIC_PATHS_LIST = List.of(
 			"/api/auth/register",
 			"/api/auth/login",
 			"/api/auth/logout",
 			"/api/products/**",
-			"/oauth2",
-			"/login/oauth2",
-			"/error");
+			"/oauth2/**",
+			"/login/oauth2/**",
+			"/error",
+			"/api/webhooks/**");
 
 	/**
 	 * This method runs for every incoming HTTP request.
@@ -55,6 +59,11 @@ public class JwtFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		try {
+			// Skip JWT processing for options requests (CORS preflight)
+			if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+				filterChain.doFilter(request, response);
+				return;
+			}
 
 			String requestURI = request.getRequestURI();
 			System.out.println("JwtFilter: " + requestURI);
@@ -158,7 +167,7 @@ public class JwtFilter extends OncePerRequestFilter {
 	 * @return true or false if the request is in the valid paths list.
 	 */
 	private boolean isPublicPath(String requestURI) {
-		return PUBLIC_PATHS_LIST.stream().anyMatch(requestURI::startsWith);
+		return PUBLIC_PATHS_LIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, requestURI));
 	}
 
 	/**
