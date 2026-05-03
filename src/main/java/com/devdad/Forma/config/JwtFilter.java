@@ -43,11 +43,9 @@ public class JwtFilter extends OncePerRequestFilter {
 			"/api/auth/register",
 			"/api/auth/login",
 			"/api/auth/logout",
-			"/api/products/**",
 			"/oauth2/**",
 			"/login/oauth2/**",
-			"/error",
-			"/api/webhooks/**");
+			"/error");
 
 	/**
 	 * This method runs for every incoming HTTP request.

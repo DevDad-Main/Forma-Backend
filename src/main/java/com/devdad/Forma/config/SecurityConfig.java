@@ -10,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -100,8 +101,6 @@ public class SecurityConfig {
 						"/api/auth/register",
 						"/api/auth/login",
 						"/api/auth/logout",
-						"/api/products/**",
-						"/api/webhooks/**",
 						"/oauth2/**",
 						"/login/oauth2/**",
 						"/error")
@@ -151,6 +150,19 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
 		return config.getAuthenticationManager();
+	}
+
+	/**
+	 * Configure paths that should be completely ignored by Spring Security.
+	 * These paths will not have any security filters applied (no authentication, no JWT processing).
+	 * Use this for truly public endpoints like products, webhooks, etc.
+	 */
+	public void configure(WebSecurity web) {
+		web.ignoring().requestMatchers(
+				"/api/products/**",
+				"/api/webhooks/**",
+				"/error"
+		);
 	}
 
 	@Bean
