@@ -9,6 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.devdad.Forma.config.SecurityConfig;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.devdad.Forma.exception.EmailAlreadyExistsException;
 import com.devdad.Forma.model.User;
 import com.devdad.Forma.model.UserPrinciple;
@@ -29,13 +31,13 @@ public class AuthService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private SecurityConfig securityConfig;
-
-	@Autowired
 	private JwtService jwtService;
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	public UserResponse getAuthenticatedUser() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -66,8 +68,7 @@ public class AuthService {
 		user.setEmail(userRegisterDTO.email());
 		user.setFirstName(userRegisterDTO.firstName());
 		user.setLastName(userRegisterDTO.lastName());
-		user.setPassword(securityConfig.passwordEncoder()
-				.encode(userRegisterDTO.password()));
+		user.setPassword(passwordEncoder.encode(userRegisterDTO.password()));
 		user = userRepository.save(user); // Need to save first to get the ID for JWT
 
 		// Generate JWT token with the user's database ID as the subject.

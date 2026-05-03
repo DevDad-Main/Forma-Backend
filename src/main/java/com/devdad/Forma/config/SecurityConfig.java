@@ -2,6 +2,8 @@ package com.devdad.Forma.config;
 
 import java.util.Arrays;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,6 +103,7 @@ public class SecurityConfig {
 						"/api/auth/register",
 						"/api/auth/login",
 						"/api/auth/logout",
+						"/api/products",
 						"/oauth2/**",
 						"/login/oauth2/**",
 						"/error")
@@ -127,11 +130,10 @@ public class SecurityConfig {
 				}));
 
 		// Session management
-		// IF_REQUIRED: Only create a session if OAuth2 flow needs it
-		// We don't use STATELESS because OAuth2 requires a session during the login
-		// flow
+		// STATELESS for JWT auth, but OAuth2 flow will create sessions when needed
+		// This prevents JSESSIONID cookies from being set for regular API requests
 		http.sessionManagement(session -> session
-				.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		// Add our JWT filter BEFORE OAuth2 redirect filter
 		// This is critical! It checks the JWT cookie BEFORE Spring can redirect to
@@ -155,11 +157,10 @@ public class SecurityConfig {
 	/**
 	 * Configure paths that should be completely ignored by Spring Security.
 	 * These paths will not have any security filters applied (no authentication, no JWT processing).
-	 * Use this for truly public endpoints like products, webhooks, etc.
+	 * Use this for webhooks that need to bypass security entirely.
 	 */
 	public void configure(WebSecurity web) {
 		web.ignoring().requestMatchers(
-				"/api/products/**",
 				"/api/webhooks/**",
 				"/error"
 		);
@@ -179,6 +180,7 @@ public class SecurityConfig {
 		config.addAllowedMethod("DELETE");
 		config.addAllowedMethod("OPTIONS");
 		// Allows Set-Cookie header through CORS
+		config.setExposedHeaders(List.of("Set-Cookie"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
 		return source;
