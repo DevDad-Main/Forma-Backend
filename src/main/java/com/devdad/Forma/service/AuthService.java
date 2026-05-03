@@ -194,8 +194,4 @@ public class AuthService {
 		System.out.println("SecurityContext cleared");
 		System.out.println("=== LOGOUT END ===");
 	}
-		
-		// Clear SecurityContext
-		org.springframework.security.core.context.SecurityContextHolder.clearContext();
-	}
 }
