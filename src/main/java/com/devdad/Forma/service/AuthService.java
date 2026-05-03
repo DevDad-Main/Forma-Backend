@@ -144,12 +144,18 @@ public class AuthService {
 	}
 
 	public void logout(HttpServletRequest request, HttpServletResponse response) {
-		// request.getSession(false);
-		// jakarta.servlet.http.Cookie jwtCookie = new
-		// jakarta.servlet.http.Cookie("jwt", "");
-		// jwtCookie.setPath("/");
-		// jwtCookie.setMaxAge(0);
-		// response.addCookie(jwtCookie);
+		System.out.println("=== LOGOUT START ===");
+		
+		// Log the cookies we received
+		jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+		if (cookies != null) {
+			for (jakarta.servlet.http.Cookie c : cookies) {
+				System.out.println("Received cookie: " + c.getName() + " = " + (c.getName().equals("jwt") ? "JWT_VALUE_HIDDEN" : c.getValue()));
+			}
+		}
+		
+		// Clear JWT cookie - use multiple approaches to ensure it's cleared
+		// Approach 1: ResponseCookie with expired date
 		ResponseCookie cookie = ResponseCookie.from("jwt", "")
 				.httpOnly(true)
 				.secure(true)
@@ -157,7 +163,39 @@ public class AuthService {
 				.maxAge(0)
 				.sameSite("None")
 				.build();
-
 		response.setHeader("Set-Cookie", cookie.toString());
+		
+		// Approach 2: Standard Cookie class with maxAge=0
+		jakarta.servlet.http.Cookie jwtCookie = new jakarta.servlet.http.Cookie("jwt", "");
+		jwtCookie.setPath("/");
+		jwtCookie.setMaxAge(0);
+		jwtCookie.setHttpOnly(true);
+		jwtCookie.setSecure(true);
+		response.addCookie(jwtCookie);
+		
+		System.out.println("JWT cookie clear headers set");
+		
+		// Clear any session
+		jakarta.servlet.http.HttpSession session = request.getSession(false);
+		if (session != null) {
+			System.out.println("Invalidating session: " + session.getId());
+			session.invalidate();
+		}
+		
+		// Clear JSESSIONID cookie as well
+		jakarta.servlet.http.Cookie sessionCookie = new jakarta.servlet.http.Cookie("JSESSIONID", "");
+		sessionCookie.setPath("/");
+		sessionCookie.setMaxAge(0);
+		sessionCookie.setHttpOnly(true);
+		response.addCookie(sessionCookie);
+		
+		// Clear SecurityContext
+		org.springframework.security.core.context.SecurityContextHolder.clearContext();
+		System.out.println("SecurityContext cleared");
+		System.out.println("=== LOGOUT END ===");
+	}
+		
+		// Clear SecurityContext
+		org.springframework.security.core.context.SecurityContextHolder.clearContext();
 	}
 }

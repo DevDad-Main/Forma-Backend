@@ -142,14 +142,8 @@ public class SecurityConfig {
 				jwtFilter,
 				org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.class);
 
-		CookieClearingLogoutHandler cookies = new CookieClearingLogoutHandler("jwt");
-
-		http.logout((logout) -> logout
-				.logoutUrl("/api/auth/logout")
-				.logoutSuccessUrl("/")
-				.invalidateHttpSession(true)
-				.deleteCookies("jwt")
-				.addLogoutHandler(cookies));
+		// Disable Spring Security logout filter - we handle logout in AuthController
+		http.logout((logout) -> logout.disable());
 
 		return http.build();
 	}
