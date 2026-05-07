@@ -31,11 +31,15 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-	@Autowired
+	// @Autowired
 	private JwtService jwtService;
 
 	@Autowired
 	private ApplicationContext ctx;
+
+	public JwtFilter(JwtService jwtService){
+		this.jwtService = jwtService;
+	}
 
 	private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
