@@ -1,6 +1,8 @@
 
 package com.devdad.Forma.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -15,6 +17,7 @@ public class OrderItem {
 	private Long id;
 
 	@ManyToOne
+	@JsonIgnore
 	private Order order;
 
 	// Snapshot reference to the product
