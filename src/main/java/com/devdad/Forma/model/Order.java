@@ -51,7 +51,7 @@ public class Order {
 	private ShippingAddress shippingAddress;
 
 	private Long subtotal;
-	private Long shipingCost;
+	private Long shippingCost;
 	private Long discount;
 
 	private LocalDateTime createdAt;
