@@ -43,7 +43,8 @@ public class Order {
 
 	// Items (OrderItem Entity or JSON column)
 	@OneToMany(cascade = CascadeType.ALL)
-	@JsonIgnore // Don't serialize items in the order response
+	// Remove this field as they don't get serialized so the frontend neveer receives this data.
+	// @JsonIgnore // Don't serialize items in the order response
 	private List<OrderItem> items;
 
 	// Shipping address as embedded (no FK to addresses table)
