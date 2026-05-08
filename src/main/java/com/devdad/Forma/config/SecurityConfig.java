@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -156,14 +157,13 @@ public class SecurityConfig {
 
 	/**
 	 * Configure paths that should be completely ignored by Spring Security.
-	 * These paths will not have any security filters applied (no authentication, no JWT processing).
+	 * These paths will not have any security filters applied (no authentication, no
+	 * JWT processing).
 	 * Use this for webhooks that need to bypass security entirely.
 	 */
-	public void configure(WebSecurity web) {
-		web.ignoring().requestMatchers(
-				"/api/webhooks/**",
-				"/error"
-		);
+	@Bean
+	public WebSecurityCustomizer webSecurityCustomizer() {
+		return (web) -> web.ignoring().requestMatchers("/api/webhooks/**", "/error");
 	}
 
 	@Bean
