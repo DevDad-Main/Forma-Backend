@@ -13,5 +13,7 @@ import com.devdad.Forma.model.User;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    List<Order> findAllOrdersByUserId(int userId);
+	List<Order> findAllOrdersByUserId(int userId);
+
+	Order findByOrderNumber(String id);
 }

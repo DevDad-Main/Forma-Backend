@@ -5,10 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.devdad.Forma.model.Order;
+import com.devdad.Forma.model.dto.order.OrderPDFResponseDTO;
 import com.devdad.Forma.model.dto.order.OrderResponseDTO;
 import com.devdad.Forma.service.OrderService;
 
@@ -16,14 +17,16 @@ import com.devdad.Forma.service.OrderService;
 @RequestMapping("/api/orders")
 public class OrderController {
 
-    @Autowired
-    private OrderService orderService;
+	@Autowired
+	private OrderService orderService;
 
-    @GetMapping
-    public ResponseEntity<List<OrderResponseDTO>> getAllUserOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
-    }
+	@GetMapping
+	public ResponseEntity<List<OrderResponseDTO>> getAllUserOrders() {
+		return ResponseEntity.ok(orderService.getAllOrders());
+	}
 
-		// @GetMapping
-		// public ResponseEntity
+	@GetMapping("/{id}")
+	public ResponseEntity<OrderPDFResponseDTO> getOrderById(@PathVariable("id") String id) {
+		return ResponseEntity.ok(orderService.getOrderById(id));
+	}
 }
