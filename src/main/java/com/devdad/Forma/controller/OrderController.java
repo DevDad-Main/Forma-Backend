@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.devdad.Forma.model.Order;
+import com.devdad.Forma.model.dto.order.OrderResponseDTO;
 import com.devdad.Forma.service.OrderService;
 
 @RestController
@@ -19,7 +20,7 @@ public class OrderController {
     private OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAllUserOrders() {
+    public ResponseEntity<List<OrderResponseDTO>> getAllUserOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 }
