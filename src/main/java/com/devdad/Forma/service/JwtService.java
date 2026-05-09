@@ -38,8 +38,6 @@ public class JwtService {
 	public String generateToken(String userId) {
 		Map<String, Object> claims = new HashMap<>();
 
-		System.out.println("Claims: " + claims);
-
 		return Jwts.builder()
 				.claims(claims)
 				.subject(userId)

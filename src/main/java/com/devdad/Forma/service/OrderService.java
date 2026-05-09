@@ -24,13 +24,11 @@ public class OrderService {
 	private OrderRepository orderRepository;
 
 	public List<OrderResponseDTO> getAllOrders() {
-		User user = getUser();
-		List<Order> orders = orderRepository.findAllOrdersByUserId(user.getId());
-		List<OrderResponseDTO> orderResponseDTOs = new ArrayList<>();
-
-		for(Order order: orders){
-			orderResponseDTOs.add(OrderMapper.toDTO(order));
-		}
+		List<Order> orders = orderRepository.findAllOrdersByUserId(getUser().getId());
+		List<OrderResponseDTO> orderResponseDTOs = orders
+				.stream()
+				.map(OrderMapper::toDTO)
+				.toList();
 
 		return orderResponseDTOs;
 	}
