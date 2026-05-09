@@ -65,8 +65,8 @@ public class PaymentService {
 				.putMetadata("products", productsJson)
 				.putMetadata("shippingAddress", addressJson)
 				.putMetadata("shippingCost",
-						request.getShippingCost() != null ? String.valueOf(request.getShippingCost()) : "0")
-				.putMetadata("discount", request.getDiscount() != null ? String.valueOf(request.getDiscount()) : "0")
+						request.getShippingCost() != null ? String.valueOf((long) (request.getShippingCost() * 100)) : "0")
+				.putMetadata("discount", request.getDiscount() != null ? String.valueOf((long) (request.getDiscount() * 100)) : "0")
 				.build();
 
 		PaymentIntent intent = PaymentIntent.create(params);
