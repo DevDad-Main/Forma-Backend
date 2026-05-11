@@ -10,10 +10,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.devdad.Forma.mapper.ProductMapper;
+import com.devdad.Forma.mapper.WishlistMapper;
 import com.devdad.Forma.model.Product;
 import com.devdad.Forma.model.User;
 import com.devdad.Forma.model.UserPrinciple;
 import com.devdad.Forma.model.Wishlist;
+import com.devdad.Forma.model.dto.product.ProductResponseDTO;
+import com.devdad.Forma.model.dto.wishlist.WishlistResponseDTO;
 import com.devdad.Forma.repository.ProductRepository;
 import com.devdad.Forma.repository.UserRepository;
 import com.devdad.Forma.repository.WishlistRepository;
@@ -21,80 +25,79 @@ import com.devdad.Forma.repository.WishlistRepository;
 @Service
 public class WishlistService {
 
-    @Autowired
-    private WishlistRepository wishlistRepository;
+	@Autowired
+	private WishlistRepository wishlistRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+	@Autowired
+	private ProductRepository productRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Transactional
-    public Wishlist addToWishlist(String id) {
+	@Transactional
+	public WishlistResponseDTO addToWishlist(String id) {
 
-        User user = getCurrentUser();
-        Optional<Wishlist> wishlistOpt = wishlistRepository.findByUserId(user.getId());
+		User user = getCurrentUser();
+		Optional<Wishlist> wishlistOpt = wishlistRepository.findByUserId(user.getId());
 
-        if (wishlistOpt.isPresent()) {
-            Wishlist wishlist = wishlistOpt.get();
-            Hibernate.initialize(wishlist.getProducts());
+		if (wishlistOpt.isPresent()) {
+			Wishlist wishlist = wishlistOpt.get();
+			Hibernate.initialize(wishlist.getProducts());
 
-            wishlist.setUser(user);
-            user.setWishlist(wishlist);
-            // Ensure we save the user so that we don't have a null field
-            userRepository.save(user);
+			wishlist.setUser(user);
+			user.setWishlist(wishlist);
+			userRepository.save(user);
 
-            boolean exists = wishlist.getProducts().size() > 0 ? wishlist.getProducts().stream()
-                    .anyMatch(p -> p.getId() == Integer.valueOf(id)) : false;
+			boolean exists = wishlist.getProducts().size() > 0 ? wishlist.getProducts().stream()
+					.anyMatch(p -> p.getId() == Integer.valueOf(id)) : false;
 
-            if (!exists) {
-                Product productToAddToWishlist = productRepository.findById(Integer.valueOf(id)).orElseThrow();
-                wishlist.getProducts().add(productToAddToWishlist);
-                wishlist = wishlistRepository.save(wishlist);
-            }
+			if (!exists) {
+				Product productToAddToWishlist = productRepository.findById(Integer.valueOf(id)).orElseThrow();
+				wishlist.getProducts().add(productToAddToWishlist);
+				wishlist = wishlistRepository.save(wishlist);
+			}
 
-            return wishlist;
-        } else {
-            return null;
-        }
+			return WishlistMapper.toDTO(wishlist);
+		} else {
+			return null;
+		}
 
-    }
+	}
 
-    public List<Product> getUserWishlist() {
-        List<Product> products = wishlistRepository
-                .findWishlistByUser(getCurrentUser())
-                .getProducts();
+	public List<ProductResponseDTO> getUserWishlist() {
+		List<Product> products = wishlistRepository
+				.findWishlistByUser(getCurrentUser())
+				.getProducts();
 
-        return products;
-    }
+		return products.stream().map(ProductMapper::toDTO).toList();
+	}
 
-    public boolean removeProductFromWishlist(String id) {
-        try {
-            int productId = Integer.parseInt(id);
-            Wishlist wishlist = wishlistRepository.findWishlistByUser(getCurrentUser());
-            if (wishlist == null) {
-                return false;
-            }
-            List<Product> products = wishlist.getProducts();
-            Optional<Product> productToRemove = products.stream()
-                    .filter(p -> p.getId() == productId) // Use .equals() if Product ID is Integer type
-                    .findFirst();
-            if (productToRemove.isPresent()) {
-                products.remove(productToRemove.get());
-                wishlistRepository.save(wishlist); // Persist the association removal
-                return true;
-            }
-            return false;
-        } catch (NumberFormatException e) {
-            return false; // Invalid ID format
-        }
-    }
+	public boolean removeProductFromWishlist(String id) {
+		try {
+			int productId = Integer.parseInt(id);
+			Wishlist wishlist = wishlistRepository.findWishlistByUser(getCurrentUser());
+			if (wishlist == null) {
+				return false;
+			}
+			List<Product> products = wishlist.getProducts();
+			Optional<Product> productToRemove = products.stream()
+					.filter(p -> p.getId() == productId)
+					.findFirst();
+			if (productToRemove.isPresent()) {
+				products.remove(productToRemove.get());
+				wishlistRepository.save(wishlist);
+				return true;
+			}
+			return false;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
 
-    private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserPrinciple principle = (UserPrinciple) auth.getPrincipal();
-        return principle.getUser();
-    }
+	private User getCurrentUser() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		UserPrinciple principle = (UserPrinciple) auth.getPrincipal();
+		return principle.getUser();
+	}
 
 }
