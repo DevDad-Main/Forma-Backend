@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.devdad.Forma.exception.ResourceNotFoundException;
+import com.devdad.Forma.mapper.ProductMapper;
 import com.devdad.Forma.model.Product;
+import com.devdad.Forma.model.dto.product.ProductCreateRequestDTO;
+import com.devdad.Forma.model.dto.product.ProductResponseDTO;
 import com.devdad.Forma.repository.ProductRepository;
 
 @Service
@@ -23,49 +26,50 @@ public class ProductService {
 	@Autowired
 	private ProductRepository productRepository;
 
-	public Product createProduct(Product product) {
-		return productRepository.save(product);
+	public ProductResponseDTO createProduct(ProductCreateRequestDTO dto) {
+		Product product = ProductMapper.toEntity(dto);
+		product = productRepository.save(product);
+		return ProductMapper.toDTO(product);
 	}
 
-	public List<Product> getProducts() {
-		// TODO: Refactor - commented out as this should be a public route but on the
-		// deployed backend we get 401, 403 due to this which i missed before.
-		// Check if current user is admin (Alternative to
-		// @PreAuthorize("hasAuthority('ADMIN')"))
-		// Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		// if (auth == null || !auth.getAuthorities().contains(new
-		// SimpleGrantedAuthority("ADMIN"))) {
-		// throw new AccessDeniedException("Admin access required.");
-		// }
-
-		return productRepository.findAll();
+	public List<ProductResponseDTO> getProducts() {
+		return productRepository.findAll()
+				.stream()
+				.map(ProductMapper::toDTO)
+				.toList();
 	}
 
-	public List<Product> saveProducts(List<Product> products) {
-		for (Product product : products) {
-			// Clear ID so DB gernerates new ones.
-			// Due to frontend sending ids and merge issues
-			product.setId(0);
-		}
-		return productRepository.saveAll(products);
+	public List<ProductResponseDTO> saveProducts(List<ProductCreateRequestDTO> dtos) {
+		List<Product> products = dtos.stream()
+				.map(dto -> {
+					Product product = ProductMapper.toEntity(dto);
+					product.setId(0);
+					return product;
+				})
+				.toList();
+		return productRepository.saveAll(products)
+				.stream()
+				.map(ProductMapper::toDTO)
+				.toList();
 	}
 
-	public Product updateProduct(int id, Product product) {
+	public ProductResponseDTO updateProduct(int id, ProductCreateRequestDTO dto) {
 		Product existingProduct = productRepository
 				.findById(id)
-				.orElseGet(() -> createProduct(product));
+				.orElseGet(() -> ProductMapper.toEntity(dto));
 
-		// copies all fields from 'product' to 'existingProduct'
-		// We can specify fields at the end to ignore.
-		BeanUtils.copyProperties(product, existingProduct, "id");
-		return productRepository.save(existingProduct);
+		Product updatedProduct = ProductMapper.toEntity(dto);
+		BeanUtils.copyProperties(updatedProduct, existingProduct, "id");
+		existingProduct = productRepository.save(existingProduct);
+		return ProductMapper.toDTO(existingProduct);
 	}
 
-	public Product getProductById(String id) {
+	public ProductResponseDTO getProductById(String id) {
 		try {
 			Integer numericId = Integer.valueOf(id);
-			return productRepository.findById(numericId)
+			Product product = productRepository.findById(numericId)
 					.orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + numericId));
+			return ProductMapper.toDTO(product);
 		} catch (NumberFormatException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID must be a numeric value.");
 		}
