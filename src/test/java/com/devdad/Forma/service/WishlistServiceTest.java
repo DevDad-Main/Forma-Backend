@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.devdad.Forma.model.Product;
 import com.devdad.Forma.model.User;
@@ -33,7 +32,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class WishlistServiceTest {
-
 	@Mock
 	private WishlistRepository wishlistRepository;
 
@@ -96,10 +94,10 @@ public class WishlistServiceTest {
 
 	@Nested
 	@DisplayName("Get Users Wishlist")
-	class GetUserWishlist {
-		
+	class GetUserWishlistTest {
+
 		@Test
-		void getUserWishlist_returnsWishlistForAuthenticatedUser(){
+		void getUserWishlist_returnsWishlistForAuthenticatedUser() {
 			Product p1 = new Product();
 			p1.setId(1);
 			Product p2 = new Product();
@@ -120,5 +118,30 @@ public class WishlistServiceTest {
 		}
 
 	}
-}
 
+	@Nested
+	@DisplayName("Remove Product From Wishlist")
+	class RemoveProductFromWishlistTest {
+
+		@Test
+		void removeProductFromWishlist_shouldReturnTrueOnRemovalOrFalseIfFailed() {
+			Product p1 = new Product();
+			p1.setId(1);
+
+			Wishlist wishlist = new Wishlist();
+			wishlist.setId(1);
+			wishlist.setUser(testUser);
+			wishlist.setProducts(List.of(p1));
+
+			when(wishlistRepository.findWishlistByUser(testUser)).thenReturn(wishlist);
+
+			Boolean isRemoved = wishlistService.removeProductFromWishlist(String.valueOf(p1.getId()));
+
+
+			assertNotNull(isRemoved);
+
+			assertEquals(0, wishlist.getProducts().size());
+			verify(wishlistRepository).findWishlistByUser(testUser);
+		}
+	}
+}
