@@ -2,6 +2,7 @@ package com.devdad.Forma.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.devdad.Forma.model.Order;
 import com.devdad.Forma.model.User;
@@ -83,6 +85,12 @@ public class OrderServiceTest {
 
 			assertEquals(1, result.getId());
 			verify(orderRepository).findByOrderNumber(String.valueOf(OrderTestData.order1().getId()));
+		}
+
+		@Test
+		void getOrderById_shouldReturn404NotFoundExcpetionOnNoOrderFound() {
+			assertThrows(ResponseStatusException.class, 
+					() -> orderService.getOrderById("abc"));
 		}
 	}
 
