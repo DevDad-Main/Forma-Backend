@@ -4,22 +4,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.devdad.Forma.exception.ResourceNotFoundException;
-import com.devdad.Forma.mapper.ProductMapper;
 import com.devdad.Forma.model.Product;
 import com.devdad.Forma.model.User;
-import com.devdad.Forma.model.UserPrinciple;
 import com.devdad.Forma.model.dto.product.ProductCreateRequestDTO;
 import com.devdad.Forma.model.dto.product.ProductResponseDTO;
 import com.devdad.Forma.repository.ProductRepository;
@@ -29,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
