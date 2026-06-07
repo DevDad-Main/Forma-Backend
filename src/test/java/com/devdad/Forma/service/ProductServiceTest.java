@@ -20,6 +20,8 @@ import com.devdad.Forma.model.dto.product.ProductCreateRequestDTO;
 import com.devdad.Forma.model.dto.product.ProductResponseDTO;
 import com.devdad.Forma.repository.ProductRepository;
 
+import static com.devdad.Forma.testutil.ProductTestData.product1;
+import static com.devdad.Forma.testutil.ProductTestData.product2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -47,45 +49,9 @@ public class ProductServiceTest {
 	private ProductService productService;
 
 	private User testUser;
-	private Product testProduct1;
-	private Product testProduct2;
 
 	@BeforeEach
 	void setupProduct() {
-		testProduct1 = new Product(
-				0, // ID
-				"Modern Oak Dining Table", // name
-				499.99, // price
-				649.99, // originalPrice
-				"/images/products/dining-table.jpg", // image
-				"/images/products/dining-table-hover.jpg", // hoverImage
-				"180x90x75 cm", // dimensions
-				List.of("furniture", "dining", "wood"), // tags
-				true, // inStock
-				true, // isNew
-				false, // isBestSeller
-				"Dining Room", // category
-				"Solid Oak Wood", // material
-				"Natural Oak", // color
-				"A premium solid oak dining table with a natural finish, perfect for modern and rustic interiors.");
-
-		testProduct2 = new Product(
-				1, // ID
-				"Modern Oak Dining Chair", // name
-				499.99, // price
-				649.99, // originalPrice
-				"/images/products/dining-table.jpg", // image
-				"/images/products/dining-table-hover.jpg", // hoverImage
-				"180x90x75 cm", // dimensions
-				List.of("furniture", "dining", "wood"), // tags
-				true, // inStock
-				true, // isNew
-				false, // isBestSeller
-				"Dining Room", // category
-				"Solid Oak Wood", // material
-				"Natural Oak", // color
-				"A premium solid oak dining table with a natural finish, perfect for modern and rustic interiors.");
-
 		testUser = new User();
 		testUser.setId(1);
 
@@ -116,13 +82,13 @@ public class ProductServiceTest {
 					"Natural Oak", // color
 					"A premium solid oak dining table with a natural finish, perfect for modern and rustic interiors.");
 
-			when(productRepository.save(any())).thenReturn(testProduct1);
+			when(productRepository.save(any())).thenReturn(product1());
 
 			ProductResponseDTO result = productService.createProduct(dto);
 
 			assertNotNull(result);
 			assertEquals(0, result.id());
-			verify(productRepository).save(testProduct1);
+			verify(productRepository).save(product1());
 		}
 	}
 
@@ -132,7 +98,7 @@ public class ProductServiceTest {
 
 		@Test
 		void getProducts_shouldReturnAllProducts() {
-			when(productRepository.findAll()).thenReturn(List.of(testProduct1, testProduct2));
+			when(productRepository.findAll()).thenReturn(List.of(product1(), product2()));
 
 			List<ProductResponseDTO> results = productService.getProducts();
 
@@ -143,7 +109,7 @@ public class ProductServiceTest {
 
 		@Test
 		void getProductById_shouldReturnAProductById() {
-			when(productRepository.findById(0)).thenReturn(Optional.of(testProduct1));
+			when(productRepository.findById(0)).thenReturn(Optional.of(product1()));
 
 			ProductResponseDTO result = productService.getProductById("0");
 
@@ -171,7 +137,7 @@ public class ProductServiceTest {
 	class UpdateProduct {
 
 		@Test
-		void updateProduct_shouldSuccessfullyUpdateAnExisitingProduct(){
+		void updateProduct_shouldSuccessfullyUpdateAnExisitingProduct() {
 			ProductCreateRequestDTO dto = new ProductCreateRequestDTO(
 					"Modern Oak Dining Table", // name
 					499.99, // price
@@ -188,9 +154,9 @@ public class ProductServiceTest {
 					"Natural Oak", // color
 					"A premium solid oak dining table with a natural finish, perfect for modern and rustic interiors.");
 
-			when(productRepository.findById(0)).thenReturn(Optional.of(testProduct1));
-			when(productRepository.save(any())).thenReturn(testProduct1);
-			
+			when(productRepository.findById(0)).thenReturn(Optional.of(product1()));
+			when(productRepository.save(any())).thenReturn(product1());
+
 			ProductResponseDTO result = productService.updateProduct(0, dto);
 
 			assertNotNull(result);
@@ -204,7 +170,7 @@ public class ProductServiceTest {
 	public class SaveProduct {
 
 		@Test
-		void saveProducts_shouldSaveAllProductRequestDTOsPassedIn(){
+		void saveProducts_shouldSaveAllProductRequestDTOsPassedIn() {
 			ProductCreateRequestDTO dto = new ProductCreateRequestDTO(
 					"Modern Oak Dining Table", // name
 					499.99, // price
@@ -237,10 +203,10 @@ public class ProductServiceTest {
 					"A premium solid oak dining table with a natural finish, perfect for modern and rustic interiors.");
 			List<ProductCreateRequestDTO> dtos = List.of(dto, dto2);
 
-			when(productRepository.saveAll(anyList())).thenReturn(List.of(testProduct1, testProduct2));
+			when(productRepository.saveAll(anyList())).thenReturn(List.of(product1(), product2()));
 
 			List<ProductResponseDTO> results = productService.saveProducts(dtos);
-			
+
 			assertNotNull(results);
 			assertEquals(2, results.size());
 			assertEquals(0, results.get(0).id());

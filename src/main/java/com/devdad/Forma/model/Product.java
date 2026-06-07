@@ -2,7 +2,6 @@ package com.devdad.Forma.model;
 
 import java.util.List;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -11,9 +10,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinColumns;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @Table(name = "products")
 @AllArgsConstructor
 @RequiredArgsConstructor
-
+@Builder
 public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
