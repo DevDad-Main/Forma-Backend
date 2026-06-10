@@ -12,6 +12,8 @@ public class JwtProperties {
 
 	@Value("${jwt.secret}")
 	private String secret;
+
+	@Value("${jwt.expiration}")
 	private Long expiration;
 	private String issuer;
 
