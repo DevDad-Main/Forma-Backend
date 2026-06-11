@@ -1,5 +1,7 @@
 package com.devdad.Forma.mapper;
 
+import java.util.ArrayList;
+
 import com.devdad.Forma.model.Product;
 import com.devdad.Forma.model.dto.product.ProductCreateRequestDTO;
 import com.devdad.Forma.model.dto.product.ProductResponseDTO;
@@ -33,7 +35,7 @@ public class ProductMapper {
 		product.setImage(dto.image());
 		product.setHoverImage(dto.hoverImage());
 		product.setDimensions(dto.dimensions());
-		product.setTags(dto.tags());
+		product.setTags(dto.tags() == null ? null : new ArrayList<>(dto.tags()));
 		product.setInStock(dto.inStock());
 		product.setIsNew(dto.isNew());
 		product.setIsBestSeller(dto.isBestSeller());

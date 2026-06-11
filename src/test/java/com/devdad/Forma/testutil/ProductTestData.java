@@ -1,5 +1,6 @@
 package com.devdad.Forma.testutil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.devdad.Forma.model.Product;
@@ -13,14 +14,14 @@ public class ProductTestData {
 
 	public static Product product1() {
 		return Product.builder()
-				.id(0)
 				.name("Modern Oak Dining Table")
 				.price(499.99)
 				.originalPrice(649.99)
 				.image("/images/products/dining-table.jpg")
 				.hoverImage("/images/products/dining-table-hover.jpg")
 				.dimensions("180x90x75 cm")
-				.tags(List.of("furniture", "dining", "wood"))
+				// NOTE: Fixes immutability of List.of()
+				.tags(new ArrayList<>(List.of("furniture", "dining", "wood")))
 				.inStock(true)
 				.isNew(true)
 				.isBestSeller(false)
@@ -33,14 +34,14 @@ public class ProductTestData {
 
 	public static Product product2() {
 		return Product.builder()
-				.id(1)
 				.name("Modern Oak Dining Table")
 				.price(499.99)
 				.originalPrice(649.99)
 				.image("/images/products/dining-table.jpg")
 				.hoverImage("/images/products/dining-table-hover.jpg")
 				.dimensions("180x90x75 cm")
-				.tags(List.of("furniture", "dining", "wood"))
+				// NOTE: Fixes immutability of List.of()
+				.tags(new ArrayList<>(List.of("furniture", "dining", "wood")))
 				.inStock(true)
 				.isNew(true)
 				.isBestSeller(false)
