@@ -35,9 +35,9 @@ public class AddressController {
         return ResponseEntity.ok(addressService.createAddress(addressDTO));
     }
 
-    @PutMapping
-    public ResponseEntity<Address> updateUserAddress(@RequestBody Address address) {
-        return ResponseEntity.ok(addressService.updateAddress(address));
+    @PutMapping("{id}")
+    public ResponseEntity<AddressResponseDTO> updateUserAddress(@PathVariable int id, @RequestBody AddressCreateRequestDTO dto) {
+        return ResponseEntity.ok(addressService.updateAddress(id, dto));
     }
 
     @DeleteMapping("{id}")

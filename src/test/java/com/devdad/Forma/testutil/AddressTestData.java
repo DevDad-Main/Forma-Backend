@@ -8,7 +8,7 @@ public class AddressTestData {
 
 	public static Address address() {
 		Address addr = new Address();
-		addr.setId(1);
+		// addr.setId(1);
 		addr.setStreet("123 Main St");
 		addr.setCity("Portland");
 		addr.setState("OR");
@@ -18,8 +18,13 @@ public class AddressTestData {
 		return addr;
 	}
 
-	public static AddressCreateRequestDTO addressCreateRequestDTO() {
+	public static AddressCreateRequestDTO addressCreateRequestDTO1() {
 		return new AddressCreateRequestDTO("123 Main St", "Portland", "OR", "US", "97201", true);
+	}
+
+
+	public static AddressCreateRequestDTO addressCreateRequestDTO2() {
+		return new AddressCreateRequestDTO("321 Second St", "Texas", "OR", "US", "97202", false);
 	}
 
 	public static AddressResponseDTO addressResponseDTO() {

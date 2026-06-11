@@ -14,11 +14,12 @@ public class UserTestData {
 
 	public static User user(){
 		return User.builder()
-			.id(1)
+			// .id(1)
 			.email("test@forma.com")
 			.firstName("Forma")
 			.lastName("Tests")
 			.password("helloWorld")
+			.role("USER")
 			.build();
 	}
 

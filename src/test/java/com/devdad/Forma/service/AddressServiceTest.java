@@ -120,10 +120,9 @@ class AddressServiceTest {
 		void updateAddress_throwsWhenNotFound() {
 			when(addressRepository.findAllByUserId("1")).thenReturn(List.of());
 
-			Address input = new Address();
-			input.setId(99);
+			AddressCreateRequestDTO dto = new AddressCreateRequestDTO("Street", "City", "State", "US", "12345", false);
 
-			assertThrows(IllegalArgumentException.class, () -> addressService.updateAddress(input));
+			assertThrows(IllegalArgumentException.class, () -> addressService.updateAddress(99, dto));
 		}
 	}
 
